@@ -5,13 +5,20 @@
   "main": "server.js",
   "scripts": {
     "dev": "node --watch src/index.js",
-    "start": "node src/index.js"
+    "start": "node src/index.js",
+    "migration:generate": "typeorm migration:generate src/db/migrations/Migration -d src/db/data-source.js --outputJs",
+    "migration:run": "typeorm migration:run -d src/db/data-source.js",
+    "db:check": "node src/db/verify-db.js"
   },
   "keywords": [],
   "author": "",
   "license": "ISC",
   "type": "module",
   "dependencies": {
-    "express": "^5.2.1"
+    "dotenv": "^17.3.1",
+    "express": "^5.2.1",
+    "pg": "^8.18.0",
+    "reflect-metadata": "^0.2.2",
+    "typeorm": "^0.3.28"
   }
 }
