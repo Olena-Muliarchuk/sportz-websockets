@@ -1,3 +1,6 @@
+import AgentAPI from 'apminsight';
+AgentAPI.config();
+
 import express from 'express';
 import http from 'http';
 import 'reflect-metadata';
@@ -12,6 +15,14 @@ const HOST = process.env.HOST || '0.0.0.0';
 
 const app = express();
 const server = http.createServer(app);
+
+// app.use(
+//     cors({
+//         origin: process.env.FRONTEND_URL || 'http://localhost:3000',
+//         methods: ['GET', 'POST'],
+//         credentials: true,
+//     }),
+// );
 
 app.use(express.json());
 
