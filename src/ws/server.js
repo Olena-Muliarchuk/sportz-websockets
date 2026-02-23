@@ -32,9 +32,26 @@ export function attachWebSocketServer(server) {
         maxPayload: 1024 * 1024,
     });
 
+    const interval = setInterval(() => {
+        for (const client of wss.clients) {
+            if (!client.isAlive) {
+                client.terminate();
+                continue;
+            }
+            client.isAlive = false;
+            client.ping();
+        }
+    }, 30000);
+
+    wss.on('close', () => clearInterval(interval));
+
     wss.on('connection', (socket) => {
-        console.log('New WS connection established');
-        sendJson(socket, { type: 'Welcome' });
+        socket.isAlive = true;
+        socket.on('pong', () => {
+            socket.isAlive = true;
+        });
+
+        sendJson(socket, { type: 'welcome' });
 
         socket.on('error', (err) => console.error('Socket error:', err));
 
