@@ -1,4 +1,5 @@
 import { z } from 'zod';
+
 /**
  * Validates query parameters for listing matches.
  * Uses coercion to handle string values from URL search params.
@@ -23,12 +24,8 @@ export const createMatchSchema = z
         sport: z.string().trim().min(1, { error: 'Sport is required' }),
         homeTeam: z.string().trim().min(1, { error: 'Home team is required' }),
         awayTeam: z.string().trim().min(1, { error: 'Away team is required' }),
-        startTime: z.string().refine((val) => !isNaN(Date.parse(val)), {
-            error: 'startTime must be a valid ISO date string',
-        }),
-        endTime: z.string().refine((val) => !isNaN(Date.parse(val)), {
-            error: 'endTime must be a valid ISO date string',
-        }),
+        startTime: z.iso.datetime({ offset: true }),
+        endTime: z.iso.datetime({ offset: true }),
         homeScore: z.coerce.number().int().nonnegative().optional(),
         awayScore: z.coerce.number().int().nonnegative().optional(),
     })
