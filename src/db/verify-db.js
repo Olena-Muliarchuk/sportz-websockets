@@ -1,4 +1,4 @@
-import { AppDataSource } from './data-source.js';
+import AppDataSource from './data-source.js';
 
 async function check() {
     try {
