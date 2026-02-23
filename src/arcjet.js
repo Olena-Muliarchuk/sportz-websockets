@@ -14,7 +14,11 @@ export const httpArcjet = arcjetKey
               shield({ mode: arcjetMode }),
               detectBot({
                   mode: arcjetMode,
-                  allow: ['CATEGORY:SEARCH_ENGINE', 'CATEGORY:PREVIEW'],
+                  allow: [
+                      'CATEGORY:SEARCH_ENGINE',
+                      'CATEGORY:PREVIEW',
+                      'POSTMAN',
+                  ],
               }),
               slidingWindow({ mode: arcjetMode, interval: '10s', max: 50 }),
           ],
@@ -26,7 +30,6 @@ export const wsArcjet = arcjetKey
           key: arcjetKey,
           rules: [
               shield({ mode: arcjetMode }),
-              detectBot({ mode: arcjetMode, allow: [] }),
               slidingWindow({ mode: arcjetMode, interval: '2s', max: 5 }),
           ],
       })
@@ -45,7 +48,7 @@ export function securityMiddleware() {
                 if (decision.reason.isRateLimit()) {
                     return res.status(429).json({ error: 'Too many requests' });
                 }
-
+                console.log('Arcjet Denied:', decision.reason);
                 return res.status(403).json({ error: 'Forbidden' });
             }
         } catch (error) {
