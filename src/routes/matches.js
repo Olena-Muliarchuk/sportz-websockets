@@ -63,6 +63,10 @@ matchRouter.post('/', async (req, res) => {
 
         const newMatch = insertResult.generatedMaps[0];
 
+        if (res.app.locals.broadcastMatchCreated) {
+            res.app.locals.broadcastMatchCreated(newMatch);
+        }
+
         res.status(201).json({ data: newMatch });
     } catch (error) {
         console.error('Failed to create match:', error);
