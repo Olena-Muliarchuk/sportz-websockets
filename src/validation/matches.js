@@ -1,4 +1,5 @@
 import { z } from 'zod';
+import { MatchStatus } from '../db/schemas';
 
 /**
  * Validates query parameters for listing matches.
@@ -47,4 +48,5 @@ export const createMatchSchema = z
 export const updateScoreSchema = z.object({
     homeScore: z.coerce.number().int().nonnegative(),
     awayScore: z.coerce.number().int().nonnegative(),
+    status: z.enum(Object.values(MatchStatus)).optional(),
 });

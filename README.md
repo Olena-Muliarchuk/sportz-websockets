@@ -20,7 +20,7 @@ While the core concept follows modern WebSocket patterns, this implementation in
 
 * **Advanced Database Layer**: Replaced Drizzle with **TypeORM**, implementing the Data Mapper pattern, entity schemas, and a structured migration workflow.
 * **Secure WebSocket Handshake**: Custom upgrade handling integrated with **Arcjet** using a `noServer` configuration. This ensures clients are vetted for bots and rate limits *before* the connection is established.
-* **Modern Validation Standards**: Leveraged **Zod 4** to implement strict `z.iso.datetime()` validation, ensuring data integrity across REST and WS layers.
+* **Modern Validation Standards**: Leveraged **Zod 4** to implement strict validation, ensuring data integrity across REST and WS layers.
 * **Production-Ready Infrastructure**: Fully optimized for **Render** with dynamic port binding and automated TypeORM migration execution on startup.
 
 ## Quick Start
@@ -40,6 +40,7 @@ DATABASE_URL=your_postgresql_url
 ARCJET_KEY=your_arcjet_api_key
 ARCJET_MODE=LIVE # Use DRY_RUN for local development
 PORT=8000
+FRONTEND_URL=http://localhost:3000 # Required for CORS
 
 ```
 
@@ -66,15 +67,38 @@ npm start
 
 ### REST Endpoints
 
-* `GET /matches` — Retrieve match list
-* `POST /matches/:id/commentary` — Post real-time updates
+* **Matches**
+* `GET /matches` — Retrieve a list of recent matches (supports `?limit=X`).
+* `POST /matches` — Create a new match (broadcasts `match_created`).
+* `PATCH /matches/:id/score` — Update match score and status (broadcasts `score_update`).
+
+
+* **Commentary**
+* `GET /matches/:id/commentary` — Retrieve historical commentary for a specific match.
+* `POST /matches/:id/commentary` — Add a new commentary event (broadcasts `commentary`).
+
 
 ### WebSocket Protocol
 
 Connect to: `ws://your-app-url/ws`
 
-* **Client Actions**: `subscribe`, `unsubscribe`, `setSubscriptions`, `ping`
-* **Server Broadcasts**: `score_update`, `commentary`, `welcome`, `error`
+* **Client Actions**:
+* `subscribe` — Subscribe to updates for a specific `matchId`.
+* `unsubscribe` — Stop receiving updates for a `matchId`.
+* `ping` — Keep-alive heartbeat.
+
+
+* **Server Broadcasts**:
+* `match_created` — Dispatched globally when a new match is added.
+* `score_update` — Dispatched to match subscribers when the score or status changes.
+* `commentary` — Dispatched to match subscribers when a new update is posted.
+* `welcome` — Initial connection confirmation.
+* `error` — Dispatched on invalid JSON or protocol violations.
+
+
+## Security & CORS
+
+The API is protected by **Arcjet**. For local development, ensure your `FRONTEND_URL` in `.env` matches your Next.js dev server address to avoid CORS blocking.
 
 ## Acknowledgments
 
