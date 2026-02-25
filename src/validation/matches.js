@@ -1,6 +1,5 @@
 import { z } from 'zod';
-import { MatchStatus } from '../db/schemas';
-
+import { MatchStatus } from '../db/schemas/index.js';
 /**
  * Validates query parameters for listing matches.
  * Uses coercion to handle string values from URL search params.
