@@ -2,6 +2,7 @@ import AgentAPI from 'apminsight';
 AgentAPI.config();
 
 import express from 'express';
+import cors from 'cors';
 import http from 'http';
 import 'reflect-metadata';
 import AppDataSource from './db/data-source.js';
@@ -16,13 +17,16 @@ const HOST = process.env.HOST || '0.0.0.0';
 const app = express();
 const server = http.createServer(app);
 
-// app.use(
-//     cors({
-//         origin: process.env.FRONTEND_URL || 'http://localhost:3000',
-//         methods: ['GET', 'POST'],
-//         credentials: true,
-//     }),
-// );
+app.use(
+    cors({
+        origin: [
+            'http://localhost:3000',
+            process.env.FRONTEND_URL,
+        ],
+        methods: ['GET', 'POST', 'PATCH', 'PUT', 'DELETE'],
+        credentials: true,
+    }),
+);
 
 app.use(express.json());
 
@@ -35,10 +39,11 @@ app.use(securityMiddleware());
 app.use('/matches', matchRouter);
 app.use('/matches/:id/commentary', commentaryRouter);
 
-const { broadcastMatchCreated, broadcastCommentary } =
+const { broadcastMatchCreated, broadcastCommentary, broadcastScoreUpdate } =
     attachWebSocketServer(server);
 app.locals.broadcastMatchCreated = broadcastMatchCreated;
 app.locals.broadcastCommentary = broadcastCommentary;
+app.locals.broadcastScoreUpdate = broadcastScoreUpdate;
 
 AppDataSource.initialize()
     .then(() => {

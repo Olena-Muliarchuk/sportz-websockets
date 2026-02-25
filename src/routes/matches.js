@@ -2,6 +2,8 @@ import { Router } from 'express';
 import {
     createMatchSchema,
     listMatchesQuerySchema,
+    matchIdParamSchema,
+    updateScoreSchema,
 } from '../validation/matches.js';
 import { MatchSchema } from '../db/schemas/index.js';
 import AppDataSource from '../db/data-source.js';
@@ -71,5 +73,59 @@ matchRouter.post('/', async (req, res) => {
     } catch (error) {
         console.error('Failed to create match:', error);
         res.status(500).json({ error: 'Failed to create match' });
+    }
+});
+
+matchRouter.patch('/:id/score', async (req, res) => {
+    const paramParsed = matchIdParamSchema.safeParse(req.params);
+    if (!paramParsed.success) {
+        return res.status(400).json({
+            error: 'Invalid match ID',
+            details: paramParsed.error.issues,
+        });
+    }
+
+    const bodyParsed = updateScoreSchema.safeParse(req.body);
+    if (!bodyParsed.success) {
+        return res.status(400).json({
+            error: 'Invalid score payload',
+            details: bodyParsed.error.issues,
+        });
+    }
+
+    const { id: matchId } = paramParsed.data;
+    const { homeScore, awayScore, status } = bodyParsed.data;
+
+    try {
+
+        const updateData = { homeScore, awayScore };
+        if (status) {
+            updateData.status = status;
+        }
+
+        const updateResult = await AppDataSource.createQueryBuilder()
+            .update(MatchSchema)
+            .set(updateData)
+            .where('id = :matchId', { matchId })
+            .returning('*')
+            .execute();
+
+        if (!updateResult.affected || updateResult.affected === 0) {
+            return res.status(404).json({ error: 'Match not found' });
+        }
+
+        const updatedMatch = updateResult.generatedMaps[0];
+
+       if (req.app.locals.broadcastScoreUpdate) {
+           req.app.locals.broadcastScoreUpdate(matchId, {
+               homeScore: updatedMatch.home_score || updatedMatch.homeScore,
+               awayScore: updatedMatch.away_score || updatedMatch.awayScore,
+               status: updatedMatch.status,
+           });
+       }
+        res.status(200).json({ data: updatedMatch });
+    } catch (error) {
+        console.error('Failed to update score:', error);
+        res.status(500).json({ error: 'Failed to update score' });
     }
 });
